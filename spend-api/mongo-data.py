@@ -39,10 +39,9 @@ def _post(url, payload, pub_key, priv_key):
     }
     return requests.post(url, headers=headers, auth=auth, json=payload)
 
-def get_cost_details(project_id: str,
-                     pub_key: str, priv_key: str,
+def get_cost_details(pub_key: str, priv_key: str,
                      start_date: str, end_date: str,
-                     org: str, projects: list[str]=[], clusters: list[str]=[], services: list[str]=services,
+                     org_id: str, projects: list[str]=[], clusters: list[str]=[], services: list[str]=services,
                      group_by=GROUP_BY_ORG) -> dict:
     '''retrieves mongo atlas cost breakdowns, filtered by time period, org, projects, clusters, and services,
     grouped by spending per org, cluster, project, or service'''
@@ -55,19 +54,19 @@ def get_cost_details(project_id: str,
     if not clusters:
         clusters = []
         for project in projects:
-            clusters_resp = _get(f"https://cloud.mongodb.com/api/atlas/v2/groups/{project_id}/clusters", pub_key=pub_key, priv_key=priv_key)
+            clusters_resp = _get(f"https://cloud.mongodb.com/api/atlas/v2/groups/{project}/clusters", pub_key=pub_key, priv_key=priv_key)
             if clusters_resp.status_code != 200:
                 return {}
             c = [result['id'] for result in clusters_resp.json()['results']]
             clusters.extend(c)
     payload = {"startDate": start_date,
                "endDate": end_date,
-               "organizations": [org],
+               "organizations": [org_id],
                "clusters": clusters,
                "projects": projects,
                "services": services,
                "groupBy": group_by}
-    url = f"https://cloud.mongodb.com/api/atlas/v2/orgs/{org}/billing/costExplorer/usage" 
+    url = f"https://cloud.mongodb.com/api/atlas/v2/orgs/{org_id}/billing/costExplorer/usage" 
     cost_token_resp = _post(url=url, payload=payload, pub_key=pub_key, priv_key=priv_key)
     if cost_token_resp.status_code != 202:
         return {} # TODO
