@@ -73,16 +73,13 @@ def get_cost_details(pub_key: str, priv_key: str,
                "services": services,
                "groupBy": group_by}
     url = f"https://cloud.mongodb.com/api/atlas/v2/orgs/{org_id}/billing/costExplorer/usage" 
-    print(url,payload)
     cost_token_resp = _post(url=url, payload=payload, pub_key=pub_key, priv_key=priv_key)
     if cost_token_resp.status_code != 202:
         raise RequestError(cost_token_resp) # TODO
     token = cost_token_resp.json()['token']
-    print(token)
     cost_results_resp = _get(url=url+'/'+token, pub_key=pub_key, priv_key=priv_key)
     if cost_results_resp.status_code == 102:
         raise RequestError(cost_token_resp) # TODO
-    print("almost")
     if cost_results_resp.status_code != 200:
         raise RequestError(cost_token_resp) # TODO
     return cost_results_resp.json()

@@ -8,11 +8,12 @@ app = Flask(__name__)
  org: -,
  projects: ?,
  clusters: ?,
- services: ?}
+ services: ?
+ grouping: ?(organizations/clusters/projects/services)}
 '''
 required = ['startDate','endDate','org']
-optional = ['projects','clusters','services']
-@app.route("/spend/services", methods=['POST'])
+optional = ['projects','clusters','services', 'grouping']
+@app.route("/spend", methods=['POST'])
 def get_spend_by_service():
     payload = request.get_json()
     auth = request.authorization
@@ -25,16 +26,18 @@ def get_spend_by_service():
     if str(auth).split()[0] != 'Basic' or auth.username is None or auth.password is None:
         return 'Invalid Authorization Header', 401
     try:
+        print(payload)
         cost_breakdown = md.get_cost_details(pub_key=auth.username,
                                              priv_key=auth.password,
                                              start_date=payload['startDate'],
                                              end_date=payload['endDate'],
                                              org_id=payload['org'],
-                                             projects=payload['projects'] if 'projects' in payload is not None else [],
-                                             clusters=payload['clusters'] if 'clusters' in payload is not None else [],
-                                             services=payload['services'] if 'services' in payload is not None else [],
-                                             group_by=md.GROUP_BY_SERVICE)
+                                             projects=payload['projects'] if 'projects' in payload else [],
+                                             clusters=payload['clusters'] if 'clusters' in payload else [],
+                                             services=payload['services'] if 'services' in payload else [],
+                                             group_by=payload['grouping'] if 'grouping' in payload else md.GROUP_BY_SERVICE)
     except md.RequestError as e:
+        print("!")
         return e.msg, e.code
     return cost_breakdown, 200
 
