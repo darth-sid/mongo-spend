@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+import mongo_data as md
 app = Flask(__name__)
 
 '''
@@ -14,10 +15,26 @@ optional = ['projects','clusters','services']
 @app.route("/spend/services", methods=['POST'])
 def get_spend_by_service():
     payload = request.get_json()
+    auth = request.authorization
     if not (set(payload.keys()) <= set(required+optional)):
         return 'Invalid Attribute(s) Specified', 400
     if not (set(required) <= set(payload.keys())):
         return 'Required Attribute(s) Not Specified', 400
-    print(request.get_json()) 
-    return '', 200
+    if not auth:
+        return 'Authorization Header Expected', 401
+    if str(auth).split()[0] != 'Basic' or auth.username is None or auth.password is None:
+        return 'Invalid Authorization Header', 401
+    try:
+        cost_breakdown = md.get_cost_details(pub_key=auth.username,
+                                             priv_key=auth.password,
+                                             start_date=payload['startDate'],
+                                             end_date=payload['endDate'],
+                                             org_id=payload['org'],
+                                             projects=payload['projects'] if 'projects' in payload is not None else [],
+                                             clusters=payload['clusters'] if 'clusters' in payload is not None else [],
+                                             services=payload['services'] if 'services' in payload is not None else [],
+                                             group_by=md.GROUP_BY_SERVICE)
+    except md.RequestError as e:
+        return e.msg, e.code
+    return cost_breakdown, 200
 
