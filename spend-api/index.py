@@ -41,3 +41,28 @@ def get_spend_by_service():
         return e.msg, e.code
     return cost_breakdown, 200
 
+@app.route("/savings", methods=['GET'])
+def get_savings():
+    auth = request.authorization
+    if not auth:
+        return 'Authorization Header Expected', 401
+    if str(auth).split()[0] != 'Basic' or auth.username is None or auth.password is None:
+        return 'Invalid Authorization Header', 401
+    inactive_clusters = md.get_idle_clusters(pub_key=auth.username, priv_key=auth.password)
+    return {"inactive" : {"total" : 0,
+                          "clusters" : inactive_clusters},
+            }
+
+@app.route("/pause", methods=['POST'])
+def pause_cluster():
+    payload = request.get_json()
+    auth = request.authorization
+    if len(payload.keys()) > 1:
+        return 'Invalid Attribute(s) Specified', 400
+    if not payload.keys() or payload.keys()[0] != 'clusters':
+        return 'Required Attribute(s) Not Specified', 400
+    if not auth:
+        return 'Authorization Header Expected', 401
+    if str(auth).split()[0] != 'Basic' or auth.username is None or auth.password is None:
+        return 'Invalid Authorization Header', 401
+    return '', 200
