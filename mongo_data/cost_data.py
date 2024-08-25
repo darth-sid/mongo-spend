@@ -48,4 +48,18 @@ def get_cost_details(pub_key: str, priv_key: str,
         raise mr.RequestError(cost_token_resp) # TODO
     if cost_results_resp.status_code != 200:
         raise mr.RequestError(cost_token_resp) # TODO
-    return cost_results_resp.json()
+    cost_results = {}
+    cost_data = cost_results_resp.json()['usageDetails']
+    if group_by == GROUP_BY_ORG:
+        identifier = 'organizationId'
+    elif group_by == GROUP_BY_CLUSTER:
+        identifier = 'clusterId'
+    elif group_by == GROUP_BY_PROJ:
+        identifier = 'projectId'
+    else:
+        identifier = 'service'
+    for cost_result in cost_data:
+        c_id = cost_result[identifier]
+        del cost_result[identifier]
+        cost_results[c_id] = cost_result
+    return cost_results

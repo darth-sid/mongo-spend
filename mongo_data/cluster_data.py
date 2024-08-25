@@ -25,24 +25,25 @@ def get_clusters(pub_key: str, priv_key: str, projects: list[str]=[], keys: list
         clusters.extend(c)
     return clusters
 
-def get_idle_clusters(pub_key: str, priv_key: str, clusters: list[tuple[str]]=[], threshold: int=48) -> list[str]:
+def get_idle_clusters(pub_key: str, priv_key: str, clusters: list[tuple[str]]=[], threshold: int=48) -> list[dict]:
     '''retrieves clusters that have not been queried within the past given threshold in hours (default 2 days)'''
     if not clusters:
-        clusters = get_clusters(pub_key=pub_key, priv_key=priv_key, keys=['name','groupId'])
+        clusters = get_clusters(pub_key=pub_key, priv_key=priv_key, keys=['name','groupId','id'])
     idle_clusters = []
-    for cluster, project in clusters: # type: ignore
+    for cluster, project, cluster_id in clusters: # type: ignore
+        cluster_data = {'name': cluster, 'id': cluster_id}
         logs = mr.get(f"https://cloud.mongodb.com/api/atlas/v2/groups/{project}/dbAccessHistory/clusters/{cluster}", 
                       pub_key=pub_key, priv_key=priv_key).json()['accessLogs']
         timestamps = [datetime.strptime(log['timestamp'], '%a %b %d %H:%M:%S %Z %Y') for log in logs]
         now = datetime.utcnow()
         if not timestamps:
-            idle_clusters.append(cluster)
+            idle_clusters.append(cluster_data)
         else:
             most_recent = min(timestamps)
             time_diff = now - most_recent
             hours_passed = time_diff.seconds // 3600
             if hours_passed >= threshold:
-                idle_clusters.append(cluster)
+                idle_clusters.append(cluster_data)
     return idle_clusters
 
 def pause_cluster(pub_key: str, priv_key: str, cluster_id: str):
