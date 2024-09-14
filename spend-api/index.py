@@ -9,7 +9,8 @@ app = Flask(__name__)
  projects: ?,
  clusters: ?,
  services: ?
- grouping: ?(organizations/clusters/projects/services)}
+ grouping: ?(organizations/clusters/projects/services)
+ }
 '''
 required = ['startDate','endDate','org']
 optional = ['projects','clusters','services', 'grouping']
@@ -72,16 +73,30 @@ def get_savings():
     except md.RequestError as e:
         return e.msg, e.code
 
+#accepts project id and cluster name to pause
+'''
+{ clusterName: -,
+  projectId: -,
+}
+'''
 @app.route("/pause", methods=['POST'])
 def pause_cluster():
     payload = request.get_json()
     auth = request.authorization
-    if len(payload.keys()) > 1:
+    if len(payload.keys()) > 2:
         return 'Invalid Attribute(s) Specified', 400
-    if not payload.keys() or payload.keys()[0] != 'clusters':
+    if not payload.keys() or not ('clusterName' in payload.keys() and 'projectId' in payload.keys()):
         return 'Required Attribute(s) Not Specified', 400
     if not auth:
         return 'Authorization Header Expected', 401
     if str(auth).split()[0] != 'Basic' or auth.username is None or auth.password is None:
         return 'Invalid Authorization Header', 401
-    return '', 200
+    try:
+        md.pause_cluster(pub_key=auth.username, 
+                         priv_key=auth.password, 
+                         cluster=payload['clusterName'],
+                         project=payload['projectId'])
+        return '', 200
+    except md.RequestError as e:
+        return e.msg, e.code
+

@@ -46,5 +46,9 @@ def get_idle_clusters(pub_key: str, priv_key: str, clusters: list[tuple[str]]=[]
                 idle_clusters.append(cluster_data)
     return idle_clusters
 
-def pause_cluster(pub_key: str, priv_key: str, cluster_id: str):
-    pass
+def pause_cluster(pub_key: str, priv_key: str, cluster: str, project: str, unpause=False):
+    url = f"https://cloud.mongodb.com/api/atlas/v2/groups/{project}/clusters/{cluster}"
+    resp = mr.patch(url, {}, pub_key=pub_key, priv_key=priv_key)
+    print(resp.text)
+    if resp.status_code != 200:
+        raise mr.RequestError(resp)
