@@ -37,8 +37,9 @@ def patch(url, data, pub_key, priv_key) -> requests.Response:
     print(data)
     return requests.patch(url, headers=headers, auth=auth, data=data)
 
-import json
-url = 'https://cloud.mongodb.com/api/atlas/v2/groups/667d928c88550259e571f718/clusters/Cluster1'
-#print(data2:=get(url,'ybjcmsrb','0822f1cd-6bbe-4c9b-a742-22ec1bb2b7ae').json())
-data = {'paused':False}
-print(patch(url,{},'ybjcmsrb','0822f1cd-6bbe-4c9b-a742-22ec1bb2b7ae').reason)
+if __name__ == '__main__':
+    import json
+    url = 'https://cloud.mongodb.com/api/atlas/v2/groups/667d928c88550259e571f718/clusters/Cluster1'
+    #print(data2:=get(url,'ybjcmsrb','0822f1cd-6bbe-4c9b-a742-22ec1bb2b7ae').json())
+    data = {'paused':False}
+    print(patch(url,{},'ybjcmsrb','0822f1cd-6bbe-4c9b-a742-22ec1bb2b7ae').reason)

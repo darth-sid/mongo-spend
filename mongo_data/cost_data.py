@@ -31,6 +31,8 @@ def get_cost_details(pub_key: str, priv_key: str,
         projects = cd.get_projects(pub_key=pub_key, priv_key=priv_key)
     if not clusters:
         clusters = [cluster[0] for cluster in cd.get_clusters(pub_key=pub_key, priv_key=priv_key, projects=projects)]
+        #deleted clusters will not be included
+
     payload = {"startDate": start_date,
                "endDate": end_date,
                "organizations": [org_id],
