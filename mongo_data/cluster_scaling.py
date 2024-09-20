@@ -1,13 +1,23 @@
 import requests
 from requests.auth import HTTPDigestAuth
-
+'''
 def get_cluster_stats(project_id, cluster_name, pub_key, priv_key):
     url = f"https://cloud.mongodb.com/api/atlas/v2/groups/{project_id}/clusters/{cluster_name}/stats"
     response = requests.get(url, auth=HTTPDigestAuth(pub_key, priv_key))
     if response.status_code != 200:
         raise Exception(f"Failed to fetch cluster stats: {response.status_code}")
     return response.json()
-
+'''
+def get_current_cluster_size(project_id, cluster_name, pub_key, priv_key):
+    url = f"https://cloud.mongodb.com/api/atlas/v2/groups/{project_id}/clusters/{cluster_name}"
+    headers = {
+        'Accept': 'application/json',  # Ensure the response is in JSON format
+    }
+    response = requests.get(url, auth=HTTPDigestAuth(pub_key, priv_key), headers=headers)
+    if response.status_code != 200:
+        raise Exception(f"Failed to get current cluster size: {response.status_code}, {response.text}") 
+    return response.json()['providerSettings']['instanceSizeName']
+    
 def adjust_cluster_size(project_id, cluster_name, pub_key, priv_key, new_size):
     url = f"https://cloud.mongodb.com/api/atlas/v2/groups/{project_id}/clusters/{cluster_name}"
     payload = {"providerSettings": {"instanceSizeName": new_size}}
