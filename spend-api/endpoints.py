@@ -5,6 +5,7 @@ resp_dict = {
         'no-auth': ('Authorization Header Expected', 401),
         'invalid-auth': ('Invalid Authorization Header', 401),
         'missing-args': ('Required Attribute(s) Not Specified', 400),
+        'malformed-payload': ('Malformed body', 400)
 }
 
 def _listify(value: str|list|None) -> list:
@@ -130,7 +131,7 @@ def get_scaling_savings():
     try:
         savings = md.calculate_savings(project_id=project,
                                     cluster_name=cluster,
-                                       pub_key=auth.username, #type: ignore
+                                    pub_key=auth.username, #type: ignore
                                     priv_key=auth.password, #type: ignore
                                     proposed_size=new_size)
         return jsonify({"savings": savings})
@@ -138,11 +139,22 @@ def get_scaling_savings():
         return jsonify({"error": str(e)}), 500
 
 # /pause?clusterName=[cluster_name]&project=[group_id]
+# body: {'action': ['pause'/'unpause']}
 @app.route("/pause", methods=['POST'])
 def pause_cluster():
     cluster = request.args.get('clusterName')
     project = request.args.get('project')
     auth = request.authorization
+    payload = request.get_json()
+    #check/parse payload
+    if 'action' not in payload.keys():
+        return resp_dict['missing-args']
+    if payload['action'] == 'pause':
+        unpause = False
+    elif payload['action'] == 'unpause':
+        unpause = True
+    else:
+        return resp_dict['malformed-payload']
     #check for valid auth
     if (resp:=_check_auth(auth)):
         return resp
@@ -154,7 +166,8 @@ def pause_cluster():
         md.pause_cluster(pub_key=auth.username, #type: ignore
                          priv_key=auth.password, #type: ignore
                          cluster=cluster,
-                         project=project)
+                         project=project,
+                         unpause=unpause)
         return '', 200
     except md.RequestError as e:
         return e.msg, e.code

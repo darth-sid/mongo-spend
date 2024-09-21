@@ -11,8 +11,8 @@ def get(url, pub_key, priv_key) -> requests.Response:
 
     auth = HTTPDigestAuth(pub_key,priv_key)
     headers = {
-        'Content' : 'application/json',
-        'Accept': 'application/vnd.atlas.2024-05-30+json'
+        'Content-Type' : 'application/json',
+        'Accept': 'application/vnd.atlas.2024-08-05+json'
     }
     return requests.get(url, headers=headers, auth=auth)
 
@@ -21,8 +21,8 @@ def post(url, payload, pub_key, priv_key) -> requests.Response:
 
     auth = HTTPDigestAuth(pub_key, priv_key)
     headers = {
-        'Content' : 'application/json',
-        'Accept': 'application/vnd.atlas.2024-05-30+json'
+        'Content-Type' : 'application/json',
+        'Accept': 'application/vnd.atlas.2024-08-05+json'
     }
     return requests.post(url, headers=headers, auth=auth, json=payload)
 
@@ -31,15 +31,8 @@ def patch(url, data, pub_key, priv_key) -> requests.Response:
 
     auth = HTTPDigestAuth(pub_key, priv_key)
     headers = {
-        'Content' : 'application/json',
-        'Accept': 'application/vnd.atlas.2024-05-30+json'
+        'Content-Type' : 'application/json',
+        'Accept': 'application/vnd.atlas.2024-08-05+json'
     }
     print(data)
     return requests.patch(url, headers=headers, auth=auth, data=data)
-
-if __name__ == '__main__':
-    import json
-    url = 'https://cloud.mongodb.com/api/atlas/v2/groups/667d928c88550259e571f718/clusters/Cluster1'
-    #print(data2:=get(url,'ybjcmsrb','0822f1cd-6bbe-4c9b-a742-22ec1bb2b7ae').json())
-    data = {'paused':False}
-    print(patch(url,{},'ybjcmsrb','0822f1cd-6bbe-4c9b-a742-22ec1bb2b7ae').reason)
