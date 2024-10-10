@@ -13,7 +13,6 @@ def _listify(value: str|list|None) -> list:
     return [value] 
 
 def _check_auth(auth) -> tuple[str,int]|None:
-    print(type(auth))
     if not auth:
         return resp_dict['no-auth']
     if str(auth).split()[0] != 'Basic' or auth.username is None or auth.password is None:
@@ -77,8 +76,8 @@ def get_cluster_size():
                                                 pub_key=auth.username, #type: ignore
                                                 priv_key=auth.password) #type: ignore
         return jsonify({"current_size": current_size}), 200
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    except md.RequestError as e:
+        return e.msg, e.code
 
 # /savings?startDate=[YYYY-MM-DD]&endDate=[YYYY-MM-DD]&org=[org_id]
 @app.route("/savings/idle", methods=['GET'])
@@ -135,8 +134,8 @@ def get_scaling_savings():
                                     priv_key=auth.password, #type: ignore
                                     proposed_size=new_size)
         return jsonify({"savings": savings})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    except md.RequestError as e:
+        return e.msg, e.code 
 
 # /pause?clusterName=[cluster_name]&project=[group_id]
 # body: {'action': ['pause'/'unpause']}

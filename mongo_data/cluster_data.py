@@ -1,6 +1,5 @@
 from . import mongo_requests as mr
 from datetime import datetime
-import json
 
 def get_projects(pub_key: str, priv_key: str) -> list[str]:
     '''retrieves all projects visible to the given api key pair'''
@@ -49,7 +48,7 @@ def get_idle_clusters(pub_key: str, priv_key: str, clusters: list[tuple[str]]=[]
 
 def pause_cluster(pub_key: str, priv_key: str, cluster: str, project: str, unpause=False):
     url = f"https://cloud.mongodb.com/api/atlas/v2/groups/{project}/clusters/{cluster}"
-    resp = mr.patch(url, json.dumps({'paused':(not unpause)}), pub_key=pub_key, priv_key=priv_key)
+    resp = mr.patch(url, {'paused':(not unpause)}, pub_key=pub_key, priv_key=priv_key)
     if resp.status_code != 200:
         raise mr.RequestError(resp)
     
